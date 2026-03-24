@@ -42,3 +42,7 @@ vm_user = "fedora"
 ssh_public_keys = [
   "ssh-ed25519 AAAA... you@machine",
 ]
+
+# K3s cluster token (shared secret between server and agents)
+# Generate with: openssl rand -hex 32
+k3s_token = "changeme-use-openssl-rand-hex-32"

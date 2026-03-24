@@ -6,6 +6,10 @@ terraform {
       source  = "bpg/proxmox"
       version = ">= 0.66.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = ">= 3.0.0"
+    }
   }
 }
 
@@ -44,6 +48,7 @@ resource "proxmox_virtual_environment_file" "cloud_init_user" {
       packages   = ["curl", "wget", "git", "jq", "htop", "nfs-utils", "iptables"]
       role       = each.value.role
       k3s_server = each.value.role == "agent" ? local.server_ip : ""
+      k3s_token  = var.k3s_token
     })
     file_name = "cloud-init-${each.value.name}.yaml"
   }
@@ -118,5 +123,33 @@ resource "proxmox_virtual_environment_vm" "k3s" {
     ignore_changes = [
       disk[0].size,
     ]
+  }
+}
+
+# ──────────────────────────────────────────────
+# Fetch kubeconfig once K3s server is ready
+# ──────────────────────────────────────────────
+
+resource "null_resource" "kubeconfig" {
+  depends_on = [proxmox_virtual_environment_vm.k3s]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "Waiting for K3s API on ${local.server_ip}:6443..."
+      for i in $(seq 1 60); do
+        curl -sk https://${local.server_ip}:6443/readyz >/dev/null 2>&1 && break
+        echo "  attempt $i/60..."
+        sleep 10
+      done
+      mkdir -p ~/.kube
+      ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+        ${var.vm_user}@${local.server_ip} \
+        "sudo cat /etc/rancher/k3s/k3s.yaml" \
+        | sed "s/127.0.0.1/${local.server_ip}/g" \
+        > ~/.kube/k3s-config
+      chmod 600 ~/.kube/k3s-config
+      echo "Kubeconfig saved to ~/.kube/k3s-config"
+      echo "  export KUBECONFIG=~/.kube/k3s-config"
+    EOT
   }
 }

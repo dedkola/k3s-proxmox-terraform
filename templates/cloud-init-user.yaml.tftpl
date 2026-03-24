@@ -50,9 +50,7 @@ runcmd:
 
 %{ if role == "server" ~}
   # ── K3s SERVER install ──
-  - curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --write-kubeconfig-mode 644 --disable traefik --tls-san ${hostname}
-  # Save node token for agents
-  - until [ -f /var/lib/rancher/k3s/server/node-token ]; do sleep 2; done
+  - curl -sfL https://get.k3s.io | K3S_TOKEN="${k3s_token}" INSTALL_K3S_EXEC="server" sh -s - --write-kubeconfig-mode 644 --disable traefik --tls-san ${hostname}
 %{ endif ~}
 
 %{ if role == "agent" ~}
@@ -64,11 +62,8 @@ runcmd:
       curl -sk https://${k3s_server}:6443 >/dev/null 2>&1 && break
       sleep 10
     done
-  - curl -sfL https://get.k3s.io | K3S_URL="https://${k3s_server}:6443" K3S_TOKEN_FILE="" sh -s -
+  - curl -sfL https://get.k3s.io | K3S_URL="https://${k3s_server}:6443" K3S_TOKEN="${k3s_token}" sh -s -
 %{ endif ~}
-
-# NOTE: For agents, you must manually set K3S_TOKEN after server is up,
-# or use a pre-shared token. See install-k3s.sh for automated approach.
 
 write_files:
   - path: /etc/profile.d/k3s.sh

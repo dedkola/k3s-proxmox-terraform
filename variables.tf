@@ -151,3 +151,9 @@ variable "ssh_public_keys" {
   description = "List of SSH public keys to inject"
   type        = list(string)
 }
+
+variable "k3s_token" {
+  description = "Pre-shared token for K3s cluster (used by server and agents)"
+  type        = string
+  sensitive   = true
+}
