@@ -4,10 +4,10 @@
 # ─────────────────────────────────────────────────────────
 
 # Proxmox connection
-proxmox_endpoint = "https://pve.example.com:8006"
+proxmox_endpoint = "https://pm.pm.com:8006"
 proxmox_api_token = "root@pam!terraform=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 proxmox_insecure = true
-proxmox_node     = "pve"
+proxmox_node     = "pm"
 
 # Fedora cloud image template (must exist in Proxmox)
 fedora_template_vmid = 9000
@@ -18,10 +18,10 @@ snippets_datastore = "local"
 
 # Network
 network_bridge = "vmbr0"
-network_prefix = "10.10.10"
-ip_offset      = 50          # server=.50, agent1=.51, agent2=.52
+network_prefix = "192.168.0"
+ip_offset      = 210          # server=.210, agent1=.211, agent2=.212
 cidr           = "/24"
-gateway        = "10.10.10.1"
+gateway        = "192.168.0.1"
 dns_servers    = ["1.1.1.1", "8.8.8.8"]
 
 # VM sizing — server
