@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────
+# terraform.tfvars.example
+# Copy to terraform.tfvars and fill in your values
+# ─────────────────────────────────────────────────────────
+
+# Proxmox connection
+proxmox_endpoint = "https://pve.example.com:8006"
+proxmox_api_token = "root@pam!terraform=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+proxmox_insecure = true
+proxmox_node     = "pve"
+
+# Fedora cloud image template (must exist in Proxmox)
+fedora_template_vmid = 9000
+
+# Storage
+vm_datastore       = "local-lvm"
+snippets_datastore = "local"
+
+# Network
+network_bridge = "vmbr0"
+network_prefix = "10.10.10"
+ip_offset      = 50          # server=.50, agent1=.51, agent2=.52
+cidr           = "/24"
+gateway        = "10.10.10.1"
+dns_servers    = ["1.1.1.1", "8.8.8.8"]
+
+# VM sizing — server
+server_cores  = 2
+server_memory = 4096   # MB
+server_disk   = 40     # GB
+
+# VM sizing — agents
+agent_cores  = 2
+agent_memory = 4096
+agent_disk   = 40
+
+# VM IDs start at 200 (server=200, agent1=201, agent2=202)
+vmid_offset = 200
+
+# Access
+vm_user = "fedora"
+ssh_public_keys = [
+  "ssh-ed25519 AAAA... you@machine",
+]

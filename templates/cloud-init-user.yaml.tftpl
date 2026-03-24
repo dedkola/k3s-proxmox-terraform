@@ -1,0 +1,77 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}.local
+manage_etc_hosts: true
+
+users:
+  - name: ${username}
+    groups: [wheel, adm]
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+%{ for key in ssh_keys ~}
+      - ${key}
+%{ endfor ~}
+
+package_update: true
+package_upgrade: true
+packages:
+%{ for pkg in packages ~}
+  - ${pkg}
+%{ endfor ~}
+
+# Disable swap (required for K8s/K3s)
+swap:
+  size: 0
+
+runcmd:
+  # Disable SELinux (or set permissive) for K3s compatibility
+  - setenforce 0 || true
+  - sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+
+  # Enable required kernel modules
+  - modprobe br_netfilter
+  - modprobe overlay
+  - echo "br_netfilter" > /etc/modules-load.d/k3s.conf
+  - echo "overlay" >> /etc/modules-load.d/k3s.conf
+
+  # Sysctl settings for K3s
+  - |
+    cat > /etc/sysctl.d/99-k3s.conf <<EOF
+    net.bridge.bridge-nf-call-iptables  = 1
+    net.bridge.bridge-nf-call-ip6tables = 1
+    net.ipv4.ip_forward                 = 1
+    EOF
+  - sysctl --system
+
+  # Disable firewalld (K3s manages its own iptables rules)
+  - systemctl disable --now firewalld || true
+
+%{ if role == "server" ~}
+  # ── K3s SERVER install ──
+  - curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --write-kubeconfig-mode 644 --disable traefik --tls-san ${hostname}
+  # Save node token for agents
+  - until [ -f /var/lib/rancher/k3s/server/node-token ]; do sleep 2; done
+%{ endif ~}
+
+%{ if role == "agent" ~}
+  # ── K3s AGENT install ──
+  # Wait for server to be reachable
+  - |
+    echo "Waiting for K3s server at ${k3s_server}..."
+    for i in $(seq 1 60); do
+      curl -sk https://${k3s_server}:6443 >/dev/null 2>&1 && break
+      sleep 10
+    done
+  - curl -sfL https://get.k3s.io | K3S_URL="https://${k3s_server}:6443" K3S_TOKEN_FILE="" sh -s -
+%{ endif ~}
+
+# NOTE: For agents, you must manually set K3S_TOKEN after server is up,
+# or use a pre-shared token. See install-k3s.sh for automated approach.
+
+write_files:
+  - path: /etc/profile.d/k3s.sh
+    content: |
+      export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    permissions: '0644'
