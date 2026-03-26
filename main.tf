@@ -45,7 +45,7 @@ resource "proxmox_virtual_environment_file" "cloud_init_user" {
       hostname   = each.value.name
       ssh_keys   = var.ssh_public_keys
       username   = var.vm_user
-      packages   = ["curl", "wget", "git", "jq", "htop", "nfs-utils", "iptables"]
+      packages   = ["curl", "wget", "git", "jq", "htop", "nfs-common", "iptables", "qemu-guest-agent"]
       role       = each.value.role
       k3s_server = each.value.role == "agent" ? local.server_ip : ""
       k3s_token  = var.k3s_token
@@ -55,7 +55,7 @@ resource "proxmox_virtual_environment_file" "cloud_init_user" {
 }
 
 # ──────────────────────────────────────────────
-# Fedora VMs
+# Ubuntu VMs
 # ──────────────────────────────────────────────
 
 resource "proxmox_virtual_environment_vm" "k3s" {

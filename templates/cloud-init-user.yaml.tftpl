@@ -5,7 +5,7 @@ manage_etc_hosts: true
 
 users:
   - name: ${username}
-    groups: [wheel, adm]
+    groups: [sudo, adm]
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     lock_passwd: true
@@ -26,9 +26,8 @@ swap:
   size: 0
 
 runcmd:
-  # Disable SELinux (or set permissive) for K3s compatibility
-  - setenforce 0 || true
-  - sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+  # Enable and start qemu-guest-agent (required for Proxmox to read network interfaces)
+  - systemctl enable --now qemu-guest-agent
 
   # Enable required kernel modules
   - modprobe br_netfilter
@@ -45,8 +44,8 @@ runcmd:
     EOF
   - sysctl --system
 
-  # Disable firewalld (K3s manages its own iptables rules)
-  - systemctl disable --now firewalld || true
+  # Disable ufw (K3s manages its own iptables rules)
+  - systemctl disable --now ufw || true
 
 %{ if role == "server" ~}
   # ── K3s SERVER install ──
