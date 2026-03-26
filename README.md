@@ -8,6 +8,7 @@ After `terraform apply`, kubeconfig is fetched to `~/.kube/k3s-config` automatic
 
 1. **Proxmox API token** — Create one in Datacenter → Permissions → API Tokens
 2. **Ubuntu Cloud image template** — Download and import:
+
    ```bash
    # On your Proxmox host:
    wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
@@ -20,6 +21,7 @@ After `terraform apply`, kubeconfig is fetched to `~/.kube/k3s-config` automatic
    qm set 8000 --serial0 socket --vga serial0
    qm template 8000
    ```
+
 3. **Snippets enabled** on the `local` datastore (Datacenter → Storage → local → Content → add "Snippets")
 
 ## Usage
@@ -45,40 +47,34 @@ kubectl get nodes
 > **Note:** Cloud-init installs K3s after the VM boots. Terraform will poll the API
 > for up to 10 minutes waiting for the server to be ready before fetching kubeconfig.
 
+## Important: DNS Domain
+
+The `dns_domain` variable **must** be set to a proper search domain (default: `"local"`).
+Without it, Proxmox sets the VM search domain to a bare TLD (e.g. `com`), which causes
+Kubernetes pods to resolve `github.com` as `github.com.com` due to `ndots:5` — breaking
+HTTPS connectivity from pods.
+
 ## File Structure
 
 ```
 ├── main.tf                        # Provider, cloud-init snippets, VM resources, kubeconfig fetch
 ├── variables.tf                   # All input variables with defaults
-├── locals.tf                      # VM definitions map
+├── locals.tf                      # VM definitions map (1 server + 2 agents)
 ├── outputs.tf                     # IPs, SSH commands, kubeconfig helper
 ├── terraform.tfvars.example       # Example config (copy → terraform.tfvars)
 └── templates/
     └── cloud-init-user.yaml.tftpl # Cloud-init: OS prep + K3s install (server & agents)
 ```
 
-
-### Clean up
+## Clean up
 
 ```bash
-# 1. Destroy all Terraform-managed resources
+# Destroy all Terraform-managed resources
 terraform destroy
-
-# 2. Clean up local Terraform files after confirming resources are gone
-rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 ```
-
-### Update configuration
-
-```bash
-
-
-```
-
 
 ## Customization
 
 - **Change VM count**: Edit `locals.tf` to add/remove entries from the `vms` map
-- **Pin K3s version**: Add `INSTALL_K3S_VERSION=v1.30.2+k3s1` to the `curl` commands in the cloud-init template
-- **Re-enable Traefik**: Remove `--disable traefik` from the cloud-init template
+- **Re-enable Traefik**: Remove `--disable traefik` from the K3s server install command in the cloud-init template
 - **Add storage**: Extend `main.tf` with additional `disk` blocks for persistent volumes
