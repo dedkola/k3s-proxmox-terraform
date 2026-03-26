@@ -81,9 +81,9 @@ resource "proxmox_virtual_environment_vm" "k3s" {
     enabled = true
   }
 
-  # ── Boot disk (clone from Fedora template) ──
+  # ── Boot disk (clone from Ubuntu template) ──
   clone {
-    vm_id = var.fedora_template_vmid
+    vm_id = var.ubuntu_template_vmid
     full  = true
   }
 

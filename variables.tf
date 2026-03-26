@@ -29,10 +29,10 @@ variable "proxmox_node" {
 # VM template & storage
 # ──────────────────────────────────────────────
 
-variable "fedora_template_vmid" {
-  description = "VM ID of the Fedora cloud image template"
+variable "ubuntu_template_vmid" {
+  description = "VM ID of the Ubuntu cloud image template"
   type        = number
-  default     = 9000
+  default     = 8000
 }
 
 variable "vm_datastore" {
@@ -144,7 +144,7 @@ variable "vmid_offset" {
 variable "vm_user" {
   description = "Default user created by cloud-init"
   type        = string
-  default     = "fedora"
+  default     = "ubuntu"
 }
 
 variable "ssh_public_keys" {

@@ -1,25 +1,24 @@
 # K3s Cluster on Proxmox — Terraform
 
-Provisions 3 Fedora VMs on Proxmox VE and bootstraps a K3s cluster
+Provisions 3 Ubuntu VMs on Proxmox VE and bootstraps a K3s cluster
 (1 server + 2 agents) fully automatically via cloud-init and a pre-shared token.
 After `terraform apply`, kubeconfig is fetched to `~/.kube/k3s-config` automatically.
 
 ## Prerequisites
 
 1. **Proxmox API token** — Create one in Datacenter → Permissions → API Tokens
-2. **Fedora Cloud image template** — Download and import:
+2. **Ubuntu Cloud image template** — Download and import:
    ```bash
    # On your Proxmox host:
-   wget https://download.fedoraproject.org/pub/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
+   wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
 
-   qm create 9000 --name fedora-cloud --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0
-   qm importdisk 9000 Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2 local-lvm
-   qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
-   qm set 9000 --ide2 local-lvm:cloudinit
-   qm set 9000 --boot c --bootdisk scsi0
-   qm set 9000 --serial0 socket --vga serial0
-   qm set 9000 --agent enabled=1
-   qm template 9000
+   qm create 8000 --memory 2048 --core 2 --name ubuntu-cloud --net0 virtio,bridge=vmbr0
+   qm disk import 8000 noble-server-cloudimg-amd64.img local-lvm
+   qm set 8000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-8000-disk-0
+   qm set 8000 --ide2 local-lvm:cloudinit
+   qm set 8000 --boot c --bootdisk scsi0
+   qm set 8000 --serial0 socket --vga serial0
+   qm template 8000
    ```
 3. **Snippets enabled** on the `local` datastore (Datacenter → Storage → local → Content → add "Snippets")
 
@@ -57,6 +56,25 @@ kubectl get nodes
 └── templates/
     └── cloud-init-user.yaml.tftpl # Cloud-init: OS prep + K3s install (server & agents)
 ```
+
+
+### Clean up
+
+```bash
+# 1. Destroy all Terraform-managed resources
+terraform destroy
+
+# 2. Clean up local Terraform files after confirming resources are gone
+rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
+```
+
+### Update configuration
+
+```bash
+
+
+```
+
 
 ## Customization
 

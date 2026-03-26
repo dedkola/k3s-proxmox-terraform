@@ -9,8 +9,8 @@ proxmox_api_token = "root@pam!terraform=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 proxmox_insecure = true
 proxmox_node     = "pm"
 
-# Fedora cloud image template (must exist in Proxmox)
-fedora_template_vmid = 9000
+# Ubuntu cloud image template (must exist in Proxmox)
+ubuntu_template_vmid = 8000
 
 # Storage
 vm_datastore       = "local-lvm"
@@ -38,7 +38,7 @@ agent_disk   = 40
 vmid_offset = 200
 
 # Access
-vm_user = "fedora"
+vm_user = "ubuntu"
 ssh_public_keys = [
   "ssh-ed25519 AAAA... you@machine",
 ]
