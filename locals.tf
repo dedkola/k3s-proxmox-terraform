@@ -29,5 +29,14 @@ locals {
       disk_size = var.agent_disk
       ip        = "${var.network_prefix}.${var.ip_offset + 2}${var.cidr}"
     }
+    agent3 = {
+      name      = "k3s-agent-3"
+      role      = "agent"
+      vmid      = var.vmid_offset + 3
+      cores     = var.agent_cores
+      memory    = var.agent_memory
+      disk_size = var.agent_disk
+      ip        = "${var.network_prefix}.${var.ip_offset + 3}${var.cidr}"
+    }
   }
 }

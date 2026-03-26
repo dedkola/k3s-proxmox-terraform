@@ -146,6 +146,7 @@ resource "null_resource" "kubeconfig" {
         ${var.vm_user}@${local.server_ip} \
         "sudo cat /etc/rancher/k3s/k3s.yaml" \
         | sed "s/127.0.0.1/${local.server_ip}/g" \
+        | sed 's/: default$/: k3s/g' \
         > ~/.kube/k3s-config
       chmod 600 ~/.kube/k3s-config
       echo "Kubeconfig saved to ~/.kube/k3s-config"
