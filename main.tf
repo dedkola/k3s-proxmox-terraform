@@ -113,6 +113,7 @@ resource "proxmox_virtual_environment_vm" "k3s" {
     }
 
     dns {
+      domain  = var.dns_domain
       servers = var.dns_servers
     }
 

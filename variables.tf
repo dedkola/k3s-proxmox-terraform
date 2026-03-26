@@ -87,6 +87,12 @@ variable "dns_servers" {
   default     = ["1.1.1.1", "8.8.8.8"]
 }
 
+variable "dns_domain" {
+  description = "DNS search domain for VMs (avoid bare TLDs like 'com' which break pod DNS resolution)"
+  type        = string
+  default     = "local"
+}
+
 # ──────────────────────────────────────────────
 # VM sizing
 # ──────────────────────────────────────────────

@@ -23,6 +23,7 @@ ip_offset      = 210          # server=.210, agent1=.211, agent2=.212
 cidr           = "/24"
 gateway        = "192.168.0.1"
 dns_servers    = ["1.1.1.1", "8.8.8.8"]
+dns_domain     = "local"        # Search domain for VMs — must NOT be a bare TLD like "com"
 
 # VM sizing — server
 server_cores  = 2
