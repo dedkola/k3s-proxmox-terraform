@@ -221,3 +221,59 @@ resource "null_resource" "ingress_nginx" {
     EOT
   }
 }
+
+# ──────────────────────────────────────────────
+# cert-manager — local CA for trusted HTTPS
+# ──────────────────────────────────────────────
+
+resource "null_resource" "cert_manager" {
+  count      = var.cert_manager_enabled ? 1 : 0
+  depends_on = [null_resource.ingress_nginx]
+
+  triggers = {
+    version = var.cert_manager_version
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export KUBECONFIG=~/.kube/k3s-config
+
+      echo "Installing cert-manager ${var.cert_manager_version}..."
+      kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${var.cert_manager_version}/cert-manager.yaml
+
+      echo "Waiting for cert-manager..."
+      kubectl rollout status deployment/cert-manager -n cert-manager --timeout=120s
+      kubectl rollout status deployment/cert-manager-webhook -n cert-manager --timeout=120s
+      kubectl rollout status deployment/cert-manager-cainjector -n cert-manager --timeout=120s
+
+      echo "Waiting for webhook to accept requests..."
+      for i in $(seq 1 30); do
+        if kubectl get clusterissuers 2>/dev/null; then break; fi
+        sleep 5
+      done
+
+      echo "Applying local CA issuer..."
+      cat <<'MANIFEST' | kubectl apply -f -
+${templatefile("${path.module}/templates/cert-manager-ca.yaml.tftpl", {
+  ca_common_name = var.ca_common_name
+})}
+MANIFEST
+
+      echo "Waiting for CA certificate to be ready..."
+      kubectl wait --for=condition=Ready certificate/lan-ca -n cert-manager --timeout=60s
+
+      echo ""
+      echo "=== cert-manager installed ==="
+      echo "ClusterIssuer 'lan-ca' is ready."
+      echo ""
+      echo "To trust the CA on your devices, export it:"
+      echo "  export KUBECONFIG=~/.kube/k3s-config"
+      echo "  kubectl get secret lan-ca-secret -n cert-manager -o jsonpath='{.data.tls\\.crt}' | base64 -d > lan-ca.crt"
+      echo ""
+      echo "Then:"
+      echo "  macOS:   sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain lan-ca.crt"
+      echo "  Linux:   sudo cp lan-ca.crt /usr/local/share/ca-certificates/ && sudo update-ca-certificates"
+      echo "  Windows: certutil -addstore -f ROOT lan-ca.crt"
+    EOT
+  }
+}

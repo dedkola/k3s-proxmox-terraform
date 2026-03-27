@@ -53,3 +53,7 @@ metallb_ip_range = "192.168.0.240-192.168.0.248"
 
 # Ingress NGINX — set to false to skip installation
 # ingress_nginx_enabled = true
+
+# cert-manager — local CA for trusted HTTPS on LAN
+# cert_manager_enabled = true
+ca_common_name = "K3s LAN CA"

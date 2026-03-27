@@ -26,3 +26,17 @@ output "metallb_ip_range" {
   description = "MetalLB L2 address pool range"
   value       = var.metallb_enabled ? var.metallb_ip_range : "MetalLB disabled"
 }
+
+output "trust_ca_commands" {
+  description = "Commands to export and trust the local CA certificate"
+  value = var.cert_manager_enabled ? join("\n", [
+    "# Export the CA certificate:",
+    "kubectl get secret lan-ca-secret -n cert-manager -o jsonpath='{.data.tls\\.crt}' | base64 -d > lan-ca.crt",
+    "",
+    "# Trust it on macOS:",
+    "sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain lan-ca.crt",
+    "",
+    "# Annotate any Ingress with:  cert-manager.io/cluster-issuer: lan-ca",
+    "# and add a tls section — cert-manager auto-issues trusted certs.",
+  ]) : "cert-manager disabled"
+}

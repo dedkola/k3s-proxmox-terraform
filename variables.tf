@@ -201,3 +201,25 @@ variable "ingress_nginx_version" {
   type        = string
   default     = "v1.12.1"
 }
+
+# ──────────────────────────────────────────────
+# cert-manager (local CA for trusted HTTPS)
+# ──────────────────────────────────────────────
+
+variable "cert_manager_enabled" {
+  description = "Install cert-manager with a local CA for trusted TLS on LAN"
+  type        = bool
+  default     = true
+}
+
+variable "cert_manager_version" {
+  description = "cert-manager version to install"
+  type        = string
+  default     = "v1.17.1"
+}
+
+variable "ca_common_name" {
+  description = "Common name for the local CA certificate (shows in browser cert details)"
+  type        = string
+  default     = "K3s LAN CA"
+}
