@@ -21,3 +21,8 @@ output "kubeconfig_command" {
   description = "Command to fetch kubeconfig from server"
   value       = "ssh ${var.vm_user}@${local.server_ip} 'sudo cat /etc/rancher/k3s/k3s.yaml' | sed 's/127.0.0.1/${local.server_ip}/g' > ~/.kube/k3s-config"
 }
+
+output "metallb_ip_range" {
+  description = "MetalLB L2 address pool range"
+  value       = var.metallb_enabled ? var.metallb_ip_range : "MetalLB disabled"
+}

@@ -163,3 +163,41 @@ variable "k3s_token" {
   type        = string
   sensitive   = true
 }
+
+# ──────────────────────────────────────────────
+# MetalLB
+# ──────────────────────────────────────────────
+
+variable "metallb_enabled" {
+  description = "Install MetalLB load balancer"
+  type        = bool
+  default     = true
+}
+
+variable "metallb_version" {
+  description = "MetalLB version to install"
+  type        = string
+  default     = "v0.14.9"
+}
+
+variable "metallb_ip_range" {
+  description = "IP range for MetalLB L2 address pool (e.g. 192.168.0.240-192.168.0.248)"
+  type        = string
+  default     = "192.168.0.240-192.168.0.248"
+}
+
+# ──────────────────────────────────────────────
+# Ingress NGINX
+# ──────────────────────────────────────────────
+
+variable "ingress_nginx_enabled" {
+  description = "Install ingress-nginx controller"
+  type        = bool
+  default     = true
+}
+
+variable "ingress_nginx_version" {
+  description = "Ingress-NGINX controller version"
+  type        = string
+  default     = "v1.12.1"
+}

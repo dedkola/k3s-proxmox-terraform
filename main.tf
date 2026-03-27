@@ -155,3 +155,69 @@ resource "null_resource" "kubeconfig" {
     EOT
   }
 }
+
+# ──────────────────────────────────────────────
+# MetalLB — L2 load balancer for external LAN IPs
+# ──────────────────────────────────────────────
+
+resource "null_resource" "metallb" {
+  count      = var.metallb_enabled ? 1 : 0
+  depends_on = [null_resource.kubeconfig]
+
+  triggers = {
+    ip_range = var.metallb_ip_range
+    version  = var.metallb_version
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export KUBECONFIG=~/.kube/k3s-config
+
+      echo "Installing MetalLB ${var.metallb_version}..."
+      kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/${var.metallb_version}/config/manifests/metallb-native.yaml
+
+      echo "Waiting for MetalLB controller..."
+      kubectl rollout status deployment/controller -n metallb-system --timeout=120s
+
+      echo "Applying MetalLB L2 address pool (${var.metallb_ip_range})..."
+      cat <<'MANIFEST' | kubectl apply -f -
+${templatefile("${path.module}/templates/metallb-config.yaml.tftpl", {
+  ip_range = var.metallb_ip_range
+})}
+MANIFEST
+
+      echo "MetalLB installed successfully."
+    EOT
+  }
+}
+
+# ──────────────────────────────────────────────
+# Ingress NGINX controller
+# ──────────────────────────────────────────────
+
+resource "null_resource" "ingress_nginx" {
+  count      = var.ingress_nginx_enabled ? 1 : 0
+  depends_on = [null_resource.metallb]
+
+  triggers = {
+    version = var.ingress_nginx_version
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export KUBECONFIG=~/.kube/k3s-config
+
+      echo "Installing ingress-nginx ${var.ingress_nginx_version}..."
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-${var.ingress_nginx_version}/deploy/static/provider/cloud/deploy.yaml
+
+      echo "Waiting for ingress-nginx controller..."
+      kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx --timeout=180s
+
+      echo "Ingress-NGINX external IP:"
+      kubectl get svc -n ingress-nginx ingress-nginx-controller \
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "(pending)"
+      echo ""
+      echo "Ingress-NGINX installed successfully."
+    EOT
+  }
+}

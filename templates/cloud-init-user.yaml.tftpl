@@ -49,7 +49,7 @@ runcmd:
 
 %{ if role == "server" ~}
   # ── K3s SERVER install ──
-  - curl -sfL https://get.k3s.io | K3S_TOKEN="${k3s_token}" INSTALL_K3S_EXEC="server" sh -s - --write-kubeconfig-mode 644 --disable traefik --tls-san ${hostname}
+  - curl -sfL https://get.k3s.io | K3S_TOKEN="${k3s_token}" INSTALL_K3S_EXEC="server" sh -s - --write-kubeconfig-mode 644 --disable traefik --disable servicelb --tls-san ${hostname}
 %{ endif ~}
 
 %{ if role == "agent" ~}
