@@ -106,13 +106,13 @@ variable "server_cores" {
 variable "server_memory" {
   description = "RAM (MB) for K3s server node"
   type        = number
-  default     = 4096
+  default     = 8096
 }
 
 variable "server_disk" {
   description = "Disk size (GB) for K3s server node"
   type        = number
-  default     = 40
+  default     = 100
 }
 
 variable "agent_cores" {
@@ -124,13 +124,13 @@ variable "agent_cores" {
 variable "agent_memory" {
   description = "RAM (MB) for K3s agent nodes"
   type        = number
-  default     = 4096
+  default     = 8096
 }
 
 variable "agent_disk" {
   description = "Disk size (GB) for K3s agent nodes"
   type        = number
-  default     = 40
+  default     = 100
 }
 
 # ──────────────────────────────────────────────
@@ -183,7 +183,7 @@ variable "metallb_version" {
 variable "metallb_ip_range" {
   description = "IP range for MetalLB L2 address pool (e.g. 192.168.0.240-192.168.0.248)"
   type        = string
-  default     = "192.168.0.240-192.168.0.248"
+  default     = "10.10.0.50-10.10.0.100"
 }
 
 # ──────────────────────────────────────────────
