@@ -164,3 +164,62 @@ variable "k3s_token" {
   sensitive   = true
 }
 
+# ──────────────────────────────────────────────
+# MetalLB
+# ──────────────────────────────────────────────
+
+variable "metallb_enabled" {
+  description = "Install MetalLB load balancer"
+  type        = bool
+  default     = true
+}
+
+variable "metallb_version" {
+  description = "MetalLB version to install"
+  type        = string
+  default     = "v0.14.9"
+}
+
+variable "metallb_ip_range" {
+  description = "IP range for MetalLB L2 address pool (e.g. 192.168.0.240-192.168.0.248)"
+  type        = string
+  default     = "10.10.0.50-10.10.0.100"
+}
+
+# ──────────────────────────────────────────────
+# Ingress NGINX
+# ──────────────────────────────────────────────
+
+variable "ingress_nginx_enabled" {
+  description = "Install ingress-nginx controller"
+  type        = bool
+  default     = true
+}
+
+variable "ingress_nginx_version" {
+  description = "Ingress-NGINX controller version"
+  type        = string
+  default     = "v1.12.1"
+}
+
+# ──────────────────────────────────────────────
+# cert-manager (local CA for trusted HTTPS)
+# ──────────────────────────────────────────────
+
+variable "cert_manager_enabled" {
+  description = "Install cert-manager with a local CA for trusted TLS on LAN"
+  type        = bool
+  default     = true
+}
+
+variable "cert_manager_version" {
+  description = "cert-manager version to install"
+  type        = string
+  default     = "v1.17.1"
+}
+
+variable "ca_common_name" {
+  description = "Common name for the local CA certificate (shows in browser cert details)"
+  type        = string
+  default     = "K3s LAN CA"
+}
